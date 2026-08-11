@@ -34,12 +34,15 @@ type CORSConfig struct {
 }
 
 type PostgresConfig struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	DbName   string
-	SSLMode  bool
+	Host            string
+	Port            string
+	User            string
+	Password        string
+	DbName          string
+	SSLMode         string
+	MaxIdleConns    int
+	MaxOpenConns    int
+	ConnMaxLifetime time.Duration
 }
 
 type RedisConfig struct {
