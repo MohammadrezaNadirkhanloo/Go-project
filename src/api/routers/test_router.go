@@ -9,5 +9,6 @@ func TestRouter(r *gin.RouterGroup) {
 	h := handlers.NewTestHandler()
 
 	r.GET("/", h.GetTestHandler)
+	r.POST("/", h.BodyBind)
 }
 

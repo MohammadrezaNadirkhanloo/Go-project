@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -43,12 +44,15 @@ type PostgresConfig struct {
 
 type RedisConfig struct {
 	Host               string
-	Port               int
+	Port               string
 	Password           string
 	Db                 int
-	MinIdleConnections int
+	ReadTimeout        time.Duration
 	PoolSize           int
-	PoolTimeout        int
+	PoolTimeout        time.Duration
+	WriteTimeout       time.Duration
+	DialTimeout        time.Duration
+	IdleCheckFrequency time.Duration
 }
 
 type PasswordConfig struct {

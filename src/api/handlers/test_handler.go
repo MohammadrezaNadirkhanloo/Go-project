@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/MohammadrezaNadirkhanloo/Go-project/api/helper"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,24 +14,23 @@ func NewTestHandler() *TestHadler {
 }
 
 func (h *TestHadler) GetTestHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"test": "message"})
+	c.JSON(http.StatusOK, helper.GenerateBaseResponse(gin.H{"message": "good"}, true, 0))
 }
 
 type PersonData struct {
-    FirstName string `json:"first_name" binding:"required,alpha,min=3,max=20"`
-    LastName  string `json:"last_name" binding:"required,alpha,min=6,max=20"`
+	FirstName string `json:"first_name" binding:"required,alpha,min=3,max=20"`
+	LastName  string `json:"last_name" binding:"required,alpha,min=6,max=20"`
 }
+
 func (h *TestHadler) BodyBind(c *gin.Context) {
-    p := PersonData{}
-    err := c.ShouldBindJSON(&p)
-    if err != nil {
-        c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-            "valid": err.Error(),
-        })
-        return
-    }
-    c.JSON(http.StatusOK, gin.H{
-        "result": "AddUser",
-        "user":   p,
-    })
+	p := PersonData{}
+	err := c.ShouldBindJSON(&p)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, helper.GenerateBaseResponseWithValidationError(nil, false, -1, err))
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"result": "AddUser",
+		"user":   p,
+	})
 }
