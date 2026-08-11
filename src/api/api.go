@@ -3,20 +3,33 @@ package api
 import (
 	"fmt"
 
+	"github.com/MohammadrezaNadirkhanloo/Go-project/api/middlewares"
 	"github.com/MohammadrezaNadirkhanloo/Go-project/api/routers"
+	validation "github.com/MohammadrezaNadirkhanloo/Go-project/api/validations"
 	"github.com/MohammadrezaNadirkhanloo/Go-project/config"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 func InitServer() {
 	cfg := config.GetConfig()
 	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery())
 
-	v1 := r.Group("/api/v1/")
+	val, ok := binding.Validator.Engine().(*validator.Validate)
+	if ok {
+		val.RegisterValidation("mobile", validation.IranMobileNumberValidator, true)
+		val.RegisterValidation("password", validation.PasswordValidator, true)
+	}
+
+	r.Use(gin.Logger(), gin.Recovery(), middlewares.LimitByRequst())
+	api := r.Group("/api")
+	v1 := api.Group("/v1")
 	{
 		health := v1.Group("/health")
 		routers.Health(health)
+		test_router := v1.Group("/test")
+		routers.TestRouter(test_router)
 	}
 	r.Run(fmt.Sprintf(":%v", cfg.Server.Port))
 }

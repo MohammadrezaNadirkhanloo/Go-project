@@ -14,6 +14,7 @@ type Config struct {
 	CORS     CORSConfig
 	Postgres PostgresConfig
 	Redis    RedisConfig
+	Password PasswordConfig
 }
 
 type ServerConfig struct {
@@ -48,6 +49,15 @@ type RedisConfig struct {
 	MinIdleConnections int
 	PoolSize           int
 	PoolTimeout        int
+}
+
+type PasswordConfig struct {
+	IncludeChars     bool
+	IncludeDigits    bool
+	MinLength        int
+	Maxlength        int
+	IncludeUppercase bool
+	IncludeLowercase bool
 }
 
 func getConfigpatch(env string) string {

@@ -9,6 +9,5 @@ func Health(r *gin.RouterGroup) {
 	handler := handlers.NewHealthHandler()
 
 	r.GET("/", handler.Health)
-	r.POST("/", handler.HealthPost)
-	r.PATCH("/:id", handler.HealthPostById)
+
 }
