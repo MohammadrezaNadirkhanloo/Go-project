@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/MohammadrezaNadirkhanloo/Go-project/config"
+	"github.com/MohammadrezaNadirkhanloo/Go-project/pkg/logging"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -59,12 +60,12 @@ func InitRedis(cfg *config.Config) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
+	logger := logging.NewLogger(cfg)
 	err := redisClient.Ping(ctx).Err()
 	if err != nil {
-		log.Fatalf("❌ Failed to connect to Redis: %v", err)
+		logger.Fatal(logging.Redis, logging.Startup, err.Error(), nil)
 	} else {
-		log.Println("✅ Successfully connected to Redis")
+		logger.Info(logging.Redis, logging.Startup, "✅ Successfully connected to Redis", nil)
 	}
 }
 
