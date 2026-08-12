@@ -1,10 +1,11 @@
 package helper
 
-import validation "github.com/MohammadrezaNadirkhanloo/Go-project/api/validations"
+import "github.com/MohammadrezaNadirkhanloo/Go-project/api/validation"
+
 
 type BaseHttpResponse struct {
 	Result           any                           `json:"result"`
-	Success          bool                          `json:"succes"`
+	Success          bool                          `json:"success"`
 	ResultCode       int                           `json:"resultCode"`
 	ValidationErrors *[]validation.ValidationError `json:"validationError"`
 	Error            any                           `json:"error"`

@@ -19,7 +19,7 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port    int
+	Port    string
 	RunMode string
 }
 
