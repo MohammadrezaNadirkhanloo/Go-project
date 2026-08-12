@@ -1,0 +1,44 @@
+definitions:
+  helper.BaseHttpResponse:
+    properties:
+      error: {}
+      result: {}
+      resultCode:
+        type: integer
+      success:
+        type: boolean
+      validationError:
+        items:
+          $ref: '#/definitions/validation.ValidationError'
+        type: array
+    type: object
+  validation.ValidationError:
+    properties:
+      message:
+        type: string
+      property:
+        type: string
+      tag:
+        type: string
+      value:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /v1/health:
+    get:
+      consumes:
+      - application/json
+      description: Check if the server is up and running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.BaseHttpResponse'
+      summary: Health check
+      tags:
+      - health
+swagger: "2.0"
