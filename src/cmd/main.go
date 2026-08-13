@@ -5,6 +5,7 @@ import (
 	"github.com/MohammadrezaNadirkhanloo/Go-project/config"
 	"github.com/MohammadrezaNadirkhanloo/Go-project/data/cache"
 	"github.com/MohammadrezaNadirkhanloo/Go-project/data/db"
+	"github.com/MohammadrezaNadirkhanloo/Go-project/data/db/migrations"
 	"github.com/MohammadrezaNadirkhanloo/Go-project/pkg/logging"
 )
 
@@ -18,6 +19,7 @@ func main() {
 	if err != nil {
 		logger.Fatal(logging.Postgres, logging.Startup, err.Error(), nil)
 	}
+	migrations.Up_1()
 	defer db.CloseDB()
 	api.InitServer(cfg)
 }

@@ -13,10 +13,11 @@ import (
 var dbClient *gorm.DB
 
 func InitDB(cfg *config.Config) error {
+	var err error
 	cnn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=Asia/Tehran",
 		cfg.Postgres.Host, cfg.Postgres.User, cfg.Postgres.Password, cfg.Postgres.DbName,
 		cfg.Postgres.Port, cfg.Postgres.SSLMode)
-	dbClient, err := gorm.Open(postgres.Open(cnn), &gorm.Config{})
+	dbClient, err = gorm.Open(postgres.Open(cnn), &gorm.Config{})
 
 	if err != nil {
 		return err
