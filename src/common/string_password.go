@@ -1,10 +1,16 @@
 package common
 
 import (
+	"fmt"
+	"math"
+	"math/big"
 	"math/rand"
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
+
+	crand "crypto/rand"
 
 	"github.com/MohammadrezaNadirkhanloo/Go-project/config"
 )
@@ -102,15 +108,26 @@ func GeneratePassword() string {
 	return string(inRune)
 }
 
-// func GenerateOtp() string {
-// 	cfg := config.GetConfig()
-// 	rand.Seed(time.Now().UnixNano())
-// 	min := int(math.Pow(10, float64(cfg.Otp.Digits-1)))   // 10^d-1 100000
-// 	max := int(math.Pow(10, float64(cfg.Otp.Digits)) - 1) // 999999 = 1000000 - 1 (10^d) -1
+func GenerateOtp() (string, error) {
+	cfg := config.GetConfig()
+	digits := cfg.Otp.Digits
 
-// 	var num = rand.Intn(max-min) + min
-// 	return strconv.Itoa(num)
-// }
+	if digits <= 0 {
+		return "", fmt.Errorf("invalid otp digits: %d", digits)
+	}
+
+	min := int64(math.Pow(10, float64(digits-1)))   // مثلا برای 6 رقم: 100000
+	max := int64(math.Pow(10, float64(digits))) - 1 // مثلا برای 6 رقم: 999999
+
+	rangeSize := big.NewInt(max - min + 1)
+
+	n, err := crand.Int(crand.Reader, rangeSize)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate secure random number: %w", err)
+	}
+	num := n.Int64() + min
+	return strconv.FormatInt(num, 10), nil
+}
 
 func HasUpper(s string) bool {
 	for _, r := range s {
