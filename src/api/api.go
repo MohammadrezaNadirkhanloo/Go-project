@@ -21,7 +21,7 @@ func InitServer(cfg *config.Config) {
 	r.Use(middlewares.DefaultStructuredLogger(cfg))
 	r.Use(middlewares.Cors(cfg))
 	r.Use(gin.Logger(), gin.Recovery(), middlewares.LimitByRequst())
-	RegisterRouter(r)
+	RegisterRouter(r, cfg)
 	RegisterSwagger(r, cfg)
 	r.Run(fmt.Sprintf(":%v", cfg.Server.Port))
 }
@@ -35,14 +35,14 @@ func RegisterValidation() {
 	}
 }
 
-func RegisterRouter(r *gin.Engine) {
+func RegisterRouter(r *gin.Engine, cfg *config.Config) {
 	api := r.Group("/api")
 	v1 := api.Group("/v1")
 	{
 		health := v1.Group("/health")
 		routers.Health(health)
-		test_router := v1.Group("/test")
-		routers.TestRouter(test_router)
+		user := v1.Group("/user")
+		routers.User(user, cfg)
 	}
 }
 
@@ -52,7 +52,7 @@ func RegisterSwagger(r *gin.Engine, cfg *config.Config) {
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Schemes = []string{"http"}
 	docs.SwaggerInfo.BasePath = "/api"
-	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", cfg.Server.Port) 
-	
+	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", cfg.Server.Port)
+
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 }
