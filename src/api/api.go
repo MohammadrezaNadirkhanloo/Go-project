@@ -20,7 +20,7 @@ func InitServer(cfg *config.Config) {
 	RegisterValidation()
 	r.Use(middlewares.DefaultStructuredLogger(cfg))
 	r.Use(middlewares.Cors(cfg))
-	r.Use(gin.Logger(), gin.Recovery(), middlewares.LimitByRequst())
+	r.Use(gin.Logger(), gin.CustomRecovery(middlewares.ErrorHandler), middlewares.LimitByRequst())
 	RegisterRouter(r, cfg)
 	RegisterSwagger(r, cfg)
 	r.Run(fmt.Sprintf(":%v", cfg.Server.Port))
@@ -41,7 +41,7 @@ func RegisterRouter(r *gin.Engine, cfg *config.Config) {
 	{
 		health := v1.Group("/health")
 		routers.Health(health)
-		user := v1.Group("/user")
+		user := v1.Group("/users", middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
 		routers.User(user, cfg)
 	}
 }
