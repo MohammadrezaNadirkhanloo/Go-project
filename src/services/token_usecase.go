@@ -35,7 +35,7 @@ func NewTokenUsecase(cfg *config.Config) *TokenUsecase {
 	}
 }
 
-func (u *TokenUsecase) GenerateToken(token tokenDto) (*dto.TokenDetail, error) {
+func (u *TokenUsecase) GenerateToken(token *tokenDto) (*dto.TokenDetail, error) {
 	td := &dto.TokenDetail{}
 	td.AccessTokenExpireTime = time.Now().Add(u.cfg.JWT.AccessTokenExpireDuration * time.Minute).Unix()
 	td.RefreshTokenExpireTime = time.Now().Add(u.cfg.JWT.RefreshTokenExpireDuration * time.Minute).Unix()
@@ -147,7 +147,7 @@ func (s *TokenUsecase) RefreshToken(c *gin.Context) (*dto.TokenDetail, error) {
 		Email:        claims[constans.EmailKey].(string),
 		Roles:        roles,
 	}
-	newTokenDetail, err := s.GenerateToken(tokenDto)
+	newTokenDetail, err := s.GenerateToken(&tokenDto)
 	if err != nil {
 		return nil, err
 	}
