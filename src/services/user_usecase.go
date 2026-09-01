@@ -183,7 +183,7 @@ func (u *UserUsecase) RegisterAndLoginByMobileNumber(ctx context.Context, req *d
 
 func (u *UserUsecase) LoginByUsername(ctx context.Context, req *dto.LoginByUsernameRequest) (*dto.TokenDetail, error) {
 	var user models.User
-	err := u.database.Model(&models.User{}).Where("username = ?", user.Username).Preload("UserRole", func(tx *gorm.DB) *gorm.DB {
+	err := u.database.Model(&models.User{}).Where("username = ?", req.Username).Preload("UserRole", func(tx *gorm.DB) *gorm.DB {
 		return tx.Preload("Role")
 	}).Find(&user).Error
 	if err != nil {
