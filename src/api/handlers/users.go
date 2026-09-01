@@ -52,14 +52,14 @@ func (h *UsersHandler) SendOtp(c *gin.Context) {
 // @Failure 409 {object} helper.BaseHttpResponse "Failed"
 // @Router /v1/users/login-by-username [post]
 func (h *UsersHandler) LoginByUsername(c *gin.Context) {
-	req := new(dto.LoginByUsernameRequest)
+	req := dto.LoginByUsernameRequest{}
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest,
 			helper.GenerateBaseResponseWithValidationError(nil, false, -1, err))
 		return
 	}
-	token, err := h.userUsecase.LoginByUsername(c, req)
+	token, err := h.userUsecase.LoginByUsername(c, &req)
 	if err != nil {
 		c.AbortWithStatusJSON(helper.TranslateErrorToStatusCode(err),
 			helper.GenerateBaseResponseWithError(nil, false, -1, err))

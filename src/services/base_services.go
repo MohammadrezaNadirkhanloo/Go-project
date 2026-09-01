@@ -2,64 +2,95 @@ package services
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/MohammadrezaNadirkhanloo/Go-project/common"
 	"github.com/MohammadrezaNadirkhanloo/Go-project/config"
-	"github.com/MohammadrezaNadirkhanloo/Go-project/domin/repository"
+	"github.com/MohammadrezaNadirkhanloo/Go-project/constans"
+	"github.com/MohammadrezaNadirkhanloo/Go-project/data/db"
 	"github.com/MohammadrezaNadirkhanloo/Go-project/pkg/logging"
+	"github.com/MohammadrezaNadirkhanloo/Go-project/pkg/service_errors"
+	"gorm.io/gorm"
 )
 
-type BaseUsecase[TEntity any, TCreate any, TUpdate any, TResponse any] struct {
-	logger     logging.Logger
-	repository repository.BaseRepository[TEntity]
+type BaseService[TEntity any, TCreate any, TUpdate any, TResponse any] struct {
+	Database *gorm.DB
+	logger   logging.Logger
 }
 
-func NewBaseUsecase[TEntity any, TCreate any, TUpdate any, TResponse any](cfg *config.Config, repository repository.BaseRepository[TEntity]) *BaseUsecase[TEntity, TCreate, TUpdate, TResponse] {
-	logger := logging.NewLogger(cfg)
-	return &BaseUsecase[TEntity, TCreate, TUpdate, TResponse]{
-		repository: repository,
-		logger:     logger,
+func NewBaseService[TEntity any, TCreate any, TUpdate any, TResponse any](cfg *config.Config) *BaseService[TEntity, TCreate, TUpdate, TResponse] {
+	return &BaseService[TEntity, TCreate, TUpdate, TResponse]{
+		Database: db.GetDB(),
+		logger:   logging.NewLogger(cfg),
 	}
 }
 
-func (u *BaseUsecase[TEntity, TCreate, TUpdate, TResponse]) Create(ctx context.Context, req TCreate) (TResponse, error) {
-	var response TResponse
-	entity, _ := common.TypeConverter[TEntity](req)
+func (s *BaseService[TEntity, TCreate, TUpdate, TResponse]) Create(ctx context.Context, req *TCreate) (*TResponse, error) {
+	model, _ := common.TypeConverter[TEntity](req)
+	tx := s.Database.WithContext(ctx).Begin()
 
-	entity, err := u.repository.Create(ctx, entity)
+	err := tx.Create(model).Error
 	if err != nil {
-		return response, err
+		tx.Rollback()
+		s.logger.Error(logging.Postgres, logging.Insert, err.Error(), nil)
+		return nil, err
 	}
-
-	response, _ = common.TypeConverter[TResponse](entity)
-	return response, nil
+	tx.Commit()
+	return common.TypeConverter[TResponse](model)
 }
 
-func (u *BaseUsecase[TEntity, TCreate, TUpdate, TResponse]) Update(ctx context.Context, id int, req TUpdate) (TResponse, error) {
-	var response TResponse
+func (s *BaseService[TEntity, TCreate, TUpdate, TResponse]) Update(ctx context.Context, id int, req *TUpdate) (*TResponse, error) {
+
 	updateMap, _ := common.TypeConverter[map[string]interface{}](req)
+	(*updateMap)["modified_by"] = &sql.NullInt64{Int64: int64(ctx.Value(constans.UserIdKey).(float64)), Valid: true}
+	(*updateMap)["modified_at"] = sql.NullTime{Valid: true, Time: time.Now().UTC()}
 
-	entity, err := u.repository.Update(ctx, id, updateMap)
+	model := new(TEntity)
+	tx := s.Database.WithContext(ctx).Begin()
+
+	err := tx.Model(model).Where("id = ? and deleted_by is null", id).Updates(*updateMap).Error
 	if err != nil {
-		return response, err
+		tx.Rollback()
+		s.logger.Error(logging.Postgres, logging.Insert, err.Error(), nil)
+		return nil, err
 	}
-	response, _ = common.TypeConverter[TResponse](entity)
-
-	return response, nil
+	tx.Commit()
+	s.GetById(ctx, id)
+	return s.GetById(ctx, id)
 }
 
-func (u *BaseUsecase[TEntity, TCreate, TUpdate, TResponse]) Delete(ctx context.Context, id int) error {
+func (s *BaseService[TEntity, TCreate, TUpdate, TResponse]) Delete(ctx context.Context, id int) error {
+	tx := s.Database.WithContext(ctx).Begin()
+	model := new(TEntity)
 
-	return u.repository.Delete(ctx, id)
+	deleteMap := map[string]interface{}{
+		"deleted_by": &sql.NullInt64{Int64: int64(ctx.Value(constans.UserIdKey).(float64)), Valid: true},
+		"deleted_at": sql.NullTime{Valid: true, Time: time.Now().UTC()},
+	}
+	deleteMap["modified_by"] = &sql.NullInt64{Int64: int64(ctx.Value(constans.UserIdKey).(float64)), Valid: true}
+	deleteMap["modified_at"] = sql.NullTime{Valid: true, Time: time.Now().UTC()}
+	if ctx.Value(constans.UserIdKey) == nil {
+		return &service_errors.ServiceError{EndUserMessage: service_errors.PermissionDenied}
+	}
+	cnt := tx.Model(model).Where("id = ? and deleted_by is null", id).Updates(deleteMap).RowsAffected
+	if cnt == 0 {
+		tx.Rollback()
+		s.logger.Error(logging.Postgres, logging.Update, service_errors.RecordNotFound, nil)
+		return &service_errors.ServiceError{EndUserMessage: service_errors.RecordNotFound}
+	}
+	tx.Commit()
+	return nil
 }
 
-func (u *BaseUsecase[TEntity, TCreate, TUpdate, TResponse]) GetById(ctx context.Context, id int) (TResponse, error) {
-	var response TResponse
-	entity, err := u.repository.GetById(ctx, id)
+func (s *BaseService[TEntity, TCreate, TUpdate, TResponse]) GetById(ctx context.Context, id int) (*TResponse, error) {
+	model := new(TEntity)
+	err := s.Database.Where("id = ? and deleted_by is null", id).First(model).Error
 	if err != nil {
-		return response, err
+		s.logger.Error(logging.Postgres, logging.Select, err.Error(), nil)
+		return nil, err
 	}
-	return common.TypeConverter[TResponse](entity)
+	return common.TypeConverter[TResponse](model)
 }
 
 // func (u *BaseUsecase[TEntity, TCreate, TUpdate, TResponse]) GetByFilter(ctx context.Context, req filter.PaginationInputWithFilter) (*filter.PagedList[TResponse], error) {
