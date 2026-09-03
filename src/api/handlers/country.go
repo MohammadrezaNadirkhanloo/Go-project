@@ -36,6 +36,7 @@ func (h *CountryHandler) Create(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(res, true, 0))
 }
+
 // UpdateCountry godoc
 // @Summary Update a country
 // @Description Update a country
@@ -64,6 +65,7 @@ func (h *CountryHandler) Update(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, helper.GenerateBaseResponse(res, true, 0))
 }
+
 // DeleteCountry godoc
 // @Summary Delete a country
 // @Description Delete a country
@@ -82,13 +84,14 @@ func (h *CountryHandler) Delete(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusNotFound, helper.GenerateBaseResponse(nil, false, -1))
 		return
 	}
-	 err := h.services.Delete(c, id)
+	err := h.services.Delete(c, id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, helper.GenerateBaseResponseWithError(nil, false, -1, err))
 		return
 	}
 	c.JSON(http.StatusOK, helper.GenerateBaseResponse(nil, true, 0))
 }
+
 // GetCountry godoc
 // @Summary Get a country
 // @Description Get a country
@@ -100,7 +103,7 @@ func (h *CountryHandler) Delete(c *gin.Context) {
 // @Failure 400 {object} helper.BaseHttpResponse "Bad request"
 // @Router /v1/countries/{id} [get]
 // @Security AuthBearer
-//Get
+// Get
 func (h *CountryHandler) GetById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	if id == 0 {
@@ -113,4 +116,30 @@ func (h *CountryHandler) GetById(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, helper.GenerateBaseResponse(res, true, 0))
+}
+
+// GetCountries godoc
+// @Summary Get Countries
+// @Description Get Countries
+// @Tags Countries
+// @Accept json
+// @produces json
+// @Param Request body dto.PaginationInputWithFilter true "Request"
+// @Success 200 {object} helper.BaseHttpResponse{result=dto.PagedList[dto.CountryResponse]} "Country response"
+// @Failure 400 {object} helper.BaseHttpResponse "Bad request"
+// @Router /v1/countries/get-by-filter [post]
+// @Security AuthBearer
+func (h *CountryHandler) GetByFilter(c *gin.Context) {
+	req := dto.PaginationInputWithFilter{}
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, helper.GenerateBaseResponseWithValidationError(nil, false, -1, err))
+		return
+	}
+	res, err := h.services.GetByFilter(c, &req)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, helper.GenerateBaseResponseWithError(nil, false, -1, err))
+		return
+	}
+	c.JSON(http.StatusCreated, helper.GenerateBaseResponse(res, true, 0))
 }
