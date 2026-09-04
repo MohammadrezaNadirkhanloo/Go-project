@@ -39,13 +39,28 @@ func RegisterRouter(r *gin.Engine, cfg *config.Config) {
 	api := r.Group("/api")
 	v1 := api.Group("/v1")
 	{
-		health := v1.Group("/health")
-		routers.Health(health)
-		user := v1.Group("/users")
-		routers.User(user, cfg)
-		
-		country := v1.Group("/country", middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
-		routers.Country(country, cfg)
+		// User
+		users := v1.Group("/users")
+
+		// Base
+		countries := v1.Group("/countries", middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
+		cities := v1.Group("/cities", middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
+		// files := v1.Group("/files", middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
+		// companies := v1.Group("/companies", middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
+		// colors := v1.Group("/colors", middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
+		// years := v1.Group("/years", middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"}))
+
+		// User
+		routers.User(users, cfg)
+
+		// Base
+		routers.Country(countries, cfg)
+		routers.City(cities, cfg)
+		// routers.File(files, cfg)
+		// routers.Company(companies, cfg)
+		// routers.Color(colors, cfg)
+		// routers.Year(years, cfg)
+
 	}
 }
 
