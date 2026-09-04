@@ -9,7 +9,6 @@
   <img alt="PostgreSQL" src="https://img.shields.io/badge/Database-PostgreSQL-336791?logo=postgresql&logoColor=white">
   <img alt="Redis" src="https://img.shields.io/badge/Cache-Redis-DC382D?logo=redis&logoColor=white">
   <img alt="Elasticsearch" src="https://img.shields.io/badge/Search-Elasticsearch-005571?logo=elasticsearch&logoColor=white">
-  <img alt="License" src="https://img.shields.io/badge/License-MIT-green">
 </p>
 
 ---
